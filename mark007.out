@@ -1,0 +1,211 @@
+
+ Program  MARK  - Survival Rate Estimation with Capture-Recapture Data
+ gfortran(dble/PIM2) Vers. 11.1 Nov 2024  19-Aug-2026 14:54:20    Page  001
+  
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ 
+ Welcome to MARK shoepfner on machine IFW-3NHM9N3 in subdirectory 
+ "C:\Users\shoepfner\Desktop\nest survival\nest_survival_2022-2025" running file "mark007.inp".
+ This version was compiled by GCC version 14.2.0 using the options: 
+  -cpp -iprefix C:/tdm-gcc-64/mingw64-14-2/bin/../lib/gcc/
+  x86_64-w64-mingw32/14.2.0/ -D_MT -D_REENTRANT -U_REENTRANT -D
+  dbleprecision -m64 -march=x86-64 -mtune=generic -mthreads -O3 -std=f2023
+  -fimplicit-none -ffpe-summary=invalid,zero,overflow,underflow
+  -funroll-loops -fno-unsafe-math-optimizations -frounding-math
+  -fsignaling-nans -fall-intrinsics -fopenmp
+
+ This problem will use 7 of 8 possible threads.
+ Static thread allocation is used.
+ Schedule kind is omp_sched_dynamic with chunk size 1
+ INPUT --- proc title ;
+
+ For procedure title CPU Time was 0.001 secs and System Time was 0.001 secs.
+ INPUT --- proc chmatrix occasions= 59 groups= 6 etype= Nest Nodes= 
+ INPUT --- 101 ICMeans NoHist hist= 465  ;
+ INPUT ---    time interval 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+ INPUT ---    1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1  1 1 1 1 1 1 1 1 1 1 1 
+ INPUT ---    1 1 1 1 1 1 1 ;
+ INPUT ---    glabel(1)=Year2019;
+ INPUT ---    glabel(2)=Year2021;
+ INPUT ---    glabel(3)=Year2022;
+ INPUT ---    glabel(4)=Year2023;
+ INPUT ---    glabel(5)=Year2024;
+ INPUT ---    glabel(6)=Year2025;
+           7          33          33
+
+   * *  WARNING  * *   Invalid observation -- last 2 times equal and fate>0. 
+           9          34          34
+
+   * *  WARNING  * *   Invalid observation -- last 2 times equal and fate>0. 
+          21          23          23
+
+   * *  WARNING  * *   Invalid observation -- last 2 times equal and fate>0. 
+           3          24          24
+
+   * *  WARNING  * *   Invalid observation -- last 2 times equal and fate>0. 
+          21          31          31
+
+   * *  WARNING  * *   Invalid observation -- last 2 times equal and fate>0. 
+          27          26          28
+
+   * *  WARNING  * *   Invalid observation -- times ordered correctly? 
+
+      Number of unique encounter histories read was 347.
+
+      Number of individual covariates read was 0.
+      Time interval lengths are all equal to 1.
+
+      Data type number is 24
+      Data type is Nest Success
+
+ For procedure chmatrix CPU Time was 0.001 secs and System Time was 0.001 secs.
+
+Program  MARK  - Survival Rate Estimation with Capture-Recapture Data
+ gfortran(dble/PIM2) Vers. 11.1 Nov 2024  19-Aug-2026 14:54:20    Page  002
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ 
+
+
+ INPUT --- proc estimate link=Logit NOLOOP varest=2ndPart    ;
+ INPUT --- model={ S.sy };
+ INPUT ---    group=1 S    rows=1 cols=58 Square ;
+ INPUT ---        1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+ INPUT ---       1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 ;
+ INPUT ---    group=2 S    rows=1 cols=58 Square ;
+ INPUT ---        2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
+ INPUT ---       2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 ;
+ INPUT ---    group=3 S    rows=1 cols=58 Square ;
+ INPUT ---        3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 
+ INPUT ---       3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 ;
+ INPUT ---    group=4 S    rows=1 cols=58 Square ;
+ INPUT ---        4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 
+ INPUT ---       4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 ;
+ INPUT ---    group=5 S    rows=1 cols=58 Square ;
+ INPUT ---        5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 
+ INPUT ---       5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 ;
+ INPUT ---    group=6 S    rows=1 cols=58 Square ;
+ INPUT ---        6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 
+ INPUT ---       6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 ;
+ INPUT ---    design matrix constraints=6 covariates=6;
+ INPUT ---        1 0 0 0 0 0;
+ INPUT ---        1 1 0 0 0 0;
+ INPUT ---        1 0 1 0 0 0;
+ INPUT ---        1 0 0 1 0 0;
+ INPUT ---        1 0 0 0 1 0;
+ INPUT ---        1 0 0 0 0 1;
+ INPUT ---       blabel(1)=S:(Intercept);
+ INPUT ---       blabel(2)=S:Year2021;
+ INPUT ---       blabel(3)=S:Year2022;
+ INPUT ---       blabel(4)=S:Year2023;
+ INPUT ---       blabel(5)=S:Year2024;
+ INPUT ---       blabel(6)=S:Year2025;
+ INPUT ---       rlabel(1)=S g2019 a0 t1;
+ INPUT ---       rlabel(2)=S g2021 a0 t1;
+ INPUT ---       rlabel(3)=S g2022 a0 t1;
+ INPUT ---       rlabel(4)=S g2023 a0 t1;
+ INPUT ---       rlabel(5)=S g2024 a0 t1;
+ INPUT ---       rlabel(6)=S g2025 a0 t1;
+   Model is { S.sy }
+
+ Link Function Used is LOGIT        
+
+ Variance Estimation Procedure Used is 2ndPart 
+ -2logL(saturated) = 0.0000000     
+
+Program  MARK  - Survival Rate Estimation with Capture-Recapture Data
+ gfortran(dble/PIM2) Vers. 11.1 Nov 2024  19-Aug-2026 14:54:20    Page  003
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ 
+ Effective Sample Size = 5564
+
+ Number of function evaluations was 38 for 6 parameters.
+ For numerical optimization, CPU Time was 0.094 secs and System Time was 0.032 secs.
+ -2logL { S.sy } = 790.04616     
+ Penalty { S.sy } = 0.0000000     
+ Gradient { S.sy }:
+  3.12712E-06   0.0000      3.17382E-06   0.0000       0.0000    
+   0.0000    
+ Maximum ABS(G) { S.sy } =  3.17382E-06
+ To compute VC matrix, CPU Time was 0.047 secs and System Time was 0.001 secs.
+ S Vector { S.sy }:
+   136.8048      22.20851      18.62024      13.31303      10.52717    
+   4.838033    
+ To invert VC matrix, CPU Time was 0.001 secs and System Time was 0.001 secs.
+ Ratio Threshold = 50.00 Max Gap (1/2) = 6.160 Next Max Gap (1/2) = 6.160
+ Gap Method for Num. of Estimated Parameters { S.sy } = 6          
+ Threshold { S.sy } = 0.6347650E-05           
+ Numerical Threshold Method for Num. of Estimated Parameters { S.sy } = 6          
+ Number of Estimated Parameters { S.sy } = 6          
+ DEVIANCE { S.sy } = 790.04616               
+ DEVIANCE Degrees of Freedom { S.sy } = 2076          
+ c-hat { S.sy } = 0.3805617               
+ AIC { S.sy } = 802.04616               
+ AICc { S.sy } = 802.06128               
+ BIC { S.sy } = 841.79060               
+ Pearson Chisquare { S.sy } = 3064.1406               
+
+
+                        LOGIT Link Function Parameters of { S.sy }
+                                                              95% Confidence Interval
+    Parameter                  Beta         Standard Error     Lower           Upper
+ -------------------------  --------------  --------------  --------------  --------------
+    1:S:(Intercept)          3.8795070       0.1544608       3.5767638       4.1822503    
+    2:S:Year2021             0.5865710       0.2888730       0.0203798       1.1527622    
+    3:S:Year2022            -1.4038485       0.2598497      -1.9131539      -0.8945432    
+    4:S:Year2023            -0.1040022       0.2655941      -0.6245666       0.4165621    
+    5:S:Year2024             0.4843740       0.3409940      -0.1839742       1.1527222    
+    6:S:Year2025            -1.0200119       0.3481378      -1.7023621      -0.3376617    
+
+Program  MARK  - Survival Rate Estimation with Capture-Recapture Data
+ gfortran(dble/PIM2) Vers. 11.1 Nov 2024  19-Aug-2026 14:54:20    Page  004
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ 
+                           Real Function Parameters of { S.sy }
+                                                               95% Confidence Interval
+     Parameter                Estimate       Standard Error     Lower           Upper
+ --------------------------  --------------  --------------  --------------  --------------
+     1:S g2019 a0 t1          0.9797572       0.0030634       0.9727948       0.9849654       
+     2:S g2021 a0 t1          0.9886383       0.0027420       0.9817939       0.9929281       
+     3:S g2022 a0 t1          0.9224177       0.0149538       0.8875643       0.9471108       
+     4:S g2023 a0 t1          0.9775883       0.0047338       0.9661711       0.9852112       
+     5:S g2024 a0 t1          0.9874311       0.0037730       0.9774240       0.9930340       
+     6:S g2025 a0 t1          0.9458074       0.0159916       0.9044763       0.9698515       
+
+
+                     Estimates of Derived Parameters
+
+                      Survival Estimates of { S.sy }
+
+       Pr. Surviving
+        Duration of                   95% Confidence Interval
+ Group     Study      Standard Error     Lower          Upper     
+ ----- -------------- -------------- -------------- --------------
+   1    0.3054018      0.0553843      0.2085923      0.4231199    
+   2    0.5154307      0.0829139      0.3568822      0.6709329    
+   3    0.0092428      0.0086907      0.0014500      0.0565454    
+   4    0.2685637      0.0754267      0.1474792      0.4379876    
+   5    0.4801693      0.1064142      0.2859846      0.6805364    
+   6    0.0394964      0.0387325      0.0055281      0.2332375    
+
+ To compute parameter estimates, CPU Time was 0.001 secs and System Time was 0.015 secs.
+
+ For procedure estimate CPU Time was 0.141 secs and System Time was 0.047 secs.
+
+Program  MARK  - Survival Rate Estimation with Capture-Recapture Data
+ gfortran(dble/PIM2) Vers. 11.1 Nov 2024  19-Aug-2026 14:54:20    Page  005
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ 
+
+
+ INPUT --- proc stop;
+
+ For this job, CPU Time in mins was 0.004 and System Time in mins was 0.002.
+
+     Time Start = 14:54:20.175   Time End = 14:54:20.305
+
+ Wall Clock Time in mins for this job was 0.002.
+
+ Maximum of 61 words used of 2048 words allocated.
+
+
+          E X E C U T I O N   S U C C E S S F U L
