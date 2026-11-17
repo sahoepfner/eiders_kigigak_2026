@@ -1,0 +1,617 @@
+<!-- just manipulating the 2026 report to make the annual maps for the 2021-2026 report -->
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+
+---
+title: "Mark-recapture Sampling of Adult Female Spectacled Eiders Breeding on Kigigak Island, Alaska: 2026 Section 10 Permit Annual Report"
+author:
+- name: Daniel Rizzolo and Sarah Hoepfner
+  affiliation: U.S. Fish and Wildlife Service, University of Alaska Fairbanks
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+#output: html_document
+output: pdf_document
+---
+
+```{r load-stuff, include=FALSE, warning = FALSE}
+# update.packages(ask = FALSE, checkBuilt = TRUE)
+# tinytex::tlmgr_update()
+library(knitr) #to run rmarkdown
+library(RODBC) # to load data tables from Access
+library(ggplot2) # for plotting
+library(sf)
+library(terra)
+library(tinytex) # output as PDF
+# options(tinytex.verbose = TRUE)
+library(dplyr)
+
+# load relevant tables from Access
+# specify database file (NB, RMarkdown sets directory with RMD file as the root directory when knit, thus the "../")
+####2021####
+db <- "C:/Users/shoepfner/Desktop/db_kig_nesting_waterfowl_2019-2026_compiled_20260923.accdb"
+
+# connect to the Access database via RODBC package
+con_db<-odbcConnectAccess2007(db)
+# get list of data tables available in the Access database
+sqlTables(con_db,tableType="TABLE")$TABLE_NAME
+# load tables used in report
+nest <- sqlFetch(con_db,"tbl_Nest")
+band <- sqlFetch(con_db,"tbl_Band")
+tdr <- sqlFetch(con_db,"tbl_TDR")
+visit <- sqlFetch(con_db,"tbl_Visit")
+resight <- sqlFetch(con_db,"tbl_Resight")
+tissue <- sqlFetch(con_db,"tbl_TissueSamples")
+
+# wrangle the nest data a bit
+# subset to 2025 data only
+nest$year <- format(nest$dt_found, format = "%Y")
+nest <- subset(nest, year =="2021")
+nest <- nest %>% filter(nest$cat_species == "SPEI")
+
+# recode and consolidate nest fate categories 
+nest$final_fate[nest$cat_fate == "active"] <- "active_lastcheck"
+nest$final_fate[nest$cat_fate == "active_lastcheck"] <- "active_lastcheck"
+nest$final_fate[nest$cat_fate == "eggs_abandoned"] <- "failed"
+nest$final_fate[nest$cat_fate == "eggs_destroyed"] <- "failed"
+nest$final_fate[nest$cat_fate == "eggs_missing"] <- "failed"
+nest$final_fate[nest$cat_fate == "eggs_inviable"] <- "failed"
+nest$final_fate[nest$cat_fate == "hatched"] <- "hatched"
+nest$final_fate[nest$cat_fate == "not_monitored"] <- "not_monitored"
+
+lyr_spei <- st_layers("~/2026 Kig post-field code/kig map files/plots_spei.kml") #Sarah's path
+
+plots_spei <- sf::st_read("~/2026 Kig post-field code/kig map files/plots_spei.kml", quiet = FALSE)   #Sarah's path
+crs_spei_plots <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
+
+lyr_emgo <- sf::st_layers("~/2026 Kig post-field code/kig map files/plots_emgo_core.kml")
+plots_emgo_core <- sf::st_read("~/2026 Kig post-field code/kig map files/plots_emgo_core.kml")
+
+
+sf::gdal_utils("info",'~/2026 Kig post-field code/kig map files/kig_georef.tif') #kig image from Google Earth georeferenced in 
+raster_kig <- terra::rast("~/2026 Kig post-field code/kig map files/kig_georef.tif")
+names(raster_kig)
+
+df_kig_2021 <- as.data.frame(raster_kig, xy=TRUE) # note 5 columns of georef'd values, but they are identical
+
+
+# create Kig plot, but using aes to set the point aesthetics and permit making a legend
+scale_label <- "Nest Fate"
+p_2021 <- ggplot() +
+  geom_raster(data = df_kig_2021, aes(x = x, y=y, fill = kig_georef_1)) + # Kig geotif
+  scale_fill_gradient(low="black", high="white", guide = FALSE) + # kig image as b&w, guide FALSE prevents the legend
+  #geom_polygon(data = plots_emgo_core, aes(x = long, y = lat, group = group), color = "white", fill = "white", alpha = 0.0, linewidth = 0.25, linetype = "dotted") + # emgo plots
+  geom_sf(data = plots_emgo_core, fill = NA, color = "white", linetype = "dashed") +
+  geom_sf(data = plots_spei, color = "white", fill = "white", alpha = 0.3) +
+  #geom_polygon(data = plots_spei, aes(x = long, y = lat, group = group), fill = "white", colour = "white", alpha =0.25, linewidth = 0.25)+ # spei plots
+  geom_point(data = nest, aes(x = val_lon_nest, y = val_lat_nest, colour = as.factor(final_fate), shape = as.factor(final_fate)), size = 1.25)+ # nest locations, colored by fate
+  scale_color_manual(values = c("green","red","green","blue"), scale_label, labels = c("active last check","failed", "hatched","not monitored"))+
+  scale_shape_manual(values = c(21,20,20,21), scale_label, labels = c("active last check","failed", "hatched","not monitored"))+
+  theme(axis.text.x = element_text(colour = "black", size = 6),
+        axis.text.y = element_text(colour = "black", size = 6),
+        axis.title.x = element_text(colour = "black",size = 8),
+        axis.title.y = element_text(colour = "black",size = 8),
+        axis.ticks = element_line(linewidth = 0.25), #was 0.5
+        #legend.title = element_text(size = 6),
+        #legend.text = element_text(size = 6),
+        panel.background = element_blank())+
+  xlab("Longitude")+
+  ylab("Latitude")+
+  scale_x_continuous(limits = c(-165.03, -164.920), expand = c(0,0))+
+  scale_y_continuous(limits = c(60.815, 60.875), expand = c(0,0)) +
+  ggtitle("2021")
+p_2021
+
+# decrease the size of the legend as per: https://stackoverflow.com/questions/52297978/decrease-overal-legend-size-elements-and-text 
+addSmallLegend <- function(myPlot, pointSize = 1.0, textSize = 8, spaceLegend = 0.1) { #(myPlot, pointSize = 0.9, textSize = 6, spaceLegend = 0.1)
+  myPlot +
+    guides(shape = guide_legend(override.aes = list(size = pointSize)),
+           color = guide_legend(override.aes = list(size = pointSize))) +
+    theme(legend.title = element_text(size = textSize), 
+          legend.text  = element_text(size = textSize),
+          legend.key.size = unit(spaceLegend, "lines"),
+          legend.justification = c(1, 1), 
+          legend.position = c(0.98, 0.98),#was 1,1
+          panel.border=element_rect(colour="black", fill=NA, size=0.5))
+}
+#p
+ggsave("nests_2021.png", plot = p, width = 8, height = 6, dpi = 300)
+
+
+
+
+
+####2022####
+db <- "C:/Users/shoepfner/Desktop/db_kig_nesting_waterfowl_2019-2026_compiled_20260923.accdb"
+
+# connect to the Access database via RODBC package
+con_db<-odbcConnectAccess2007(db)
+# get list of data tables available in the Access database
+sqlTables(con_db,tableType="TABLE")$TABLE_NAME
+# load tables used in report
+nest <- sqlFetch(con_db,"tbl_Nest")
+band <- sqlFetch(con_db,"tbl_Band")
+tdr <- sqlFetch(con_db,"tbl_TDR")
+visit <- sqlFetch(con_db,"tbl_Visit")
+resight <- sqlFetch(con_db,"tbl_Resight")
+tissue <- sqlFetch(con_db,"tbl_TissueSamples")
+
+# wrangle the nest data a bit
+# subset to 2025 data only
+nest$year <- format(nest$dt_found, format = "%Y")
+nest <- subset(nest, year =="2022")
+nest <- nest %>% filter(nest$cat_species == "SPEI")
+
+# recode and consolidate nest fate categories 
+nest$final_fate[nest$cat_fate == "active"] <- "active_lastcheck"
+nest$final_fate[nest$cat_fate == "active_lastcheck"] <- "active_lastcheck"
+nest$final_fate[nest$cat_fate == "eggs_abandoned"] <- "failed"
+nest$final_fate[nest$cat_fate == "eggs_destroyed"] <- "failed"
+nest$final_fate[nest$cat_fate == "eggs_missing"] <- "failed"
+nest$final_fate[nest$cat_fate == "eggs_inviable"] <- "failed"
+nest$final_fate[nest$cat_fate == "hatched"] <- "hatched"
+nest$final_fate[nest$cat_fate == "not_monitored"] <- "not_monitored"
+
+lyr_spei <- st_layers("~/2026 Kig post-field code/kig map files/plots_spei.kml") #Sarah's path
+
+plots_spei <- sf::st_read("~/2026 Kig post-field code/kig map files/plots_spei.kml", quiet = FALSE)   #Sarah's path
+crs_spei_plots <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
+
+lyr_emgo <- sf::st_layers("~/2026 Kig post-field code/kig map files/plots_emgo_core.kml")
+plots_emgo_core <- sf::st_read("~/2026 Kig post-field code/kig map files/plots_emgo_core.kml")
+
+
+sf::gdal_utils("info",'~/2026 Kig post-field code/kig map files/kig_georef.tif') #kig image from Google Earth georeferenced in 
+raster_kig <- terra::rast("~/2026 Kig post-field code/kig map files/kig_georef.tif")
+names(raster_kig)
+
+df_kig_2022 <- as.data.frame(raster_kig, xy=TRUE) # note 5 columns of georef'd values, but they are identical
+
+
+# create Kig plot, but using aes to set the point aesthetics and permit making a legend
+scale_label <- "Nest Fate"
+p_2022 <- ggplot() +
+  geom_raster(data = df_kig_2022, aes(x = x, y=y, fill = kig_georef_1)) + # Kig geotif
+  scale_fill_gradient(low="black", high="white", guide = FALSE) + # kig image as b&w, guide FALSE prevents the legend
+  #geom_polygon(data = plots_emgo_core, aes(x = long, y = lat, group = group), color = "white", fill = "white", alpha = 0.0, linewidth = 0.25, linetype = "dotted") + # emgo plots
+  geom_sf(data = plots_emgo_core, fill = NA, color = "white", linetype = "dashed") +
+  geom_sf(data = plots_spei, color = "white", fill = "white", alpha = 0.3) +
+  #geom_polygon(data = plots_spei, aes(x = long, y = lat, group = group), fill = "white", colour = "white", alpha =0.25, linewidth = 0.25)+ # spei plots
+  geom_point(data = nest, aes(x = val_lon_nest, y = val_lat_nest, colour = as.factor(final_fate), shape = as.factor(final_fate)), size = 1.25)+ # nest locations, colored by fate
+  scale_color_manual(values = c("green","red","green","blue"), scale_label, labels = c("active last check","failed", "hatched","not monitored"))+
+  scale_shape_manual(values = c(21,20,20,21), scale_label, labels = c("active last check","failed", "hatched","not monitored"))+
+  theme(axis.text.x = element_text(colour = "black", size = 6),
+        axis.text.y = element_text(colour = "black", size = 6),
+        axis.title.x = element_text(colour = "black",size = 8),
+        axis.title.y = element_text(colour = "black",size = 8),
+        axis.ticks = element_line(linewidth = 0.25), #was 0.5
+        #legend.title = element_text(size = 6),
+        #legend.text = element_text(size = 6),
+        panel.background = element_blank())+
+  xlab("Longitude")+
+  ylab("Latitude")+
+  scale_x_continuous(limits = c(-165.03, -164.920), expand = c(0,0))+
+  scale_y_continuous(limits = c(60.815, 60.875), expand = c(0,0)) +
+  ggtitle("2022") 
+p_2022
+
+# decrease the size of the legend as per: https://stackoverflow.com/questions/52297978/decrease-overal-legend-size-elements-and-text 
+addSmallLegend <- function(myPlot, pointSize = 1.0, textSize = 8, spaceLegend = 0.1) { #(myPlot, pointSize = 0.9, textSize = 6, spaceLegend = 0.1)
+  myPlot +
+    guides(shape = guide_legend(override.aes = list(size = pointSize)),
+           color = guide_legend(override.aes = list(size = pointSize))) +
+    theme(legend.title = element_text(size = textSize), 
+          legend.text  = element_text(size = textSize),
+          legend.key.size = unit(spaceLegend, "lines"),
+          legend.justification = c(1, 1), 
+          legend.position = c(0.98, 0.98),#was 1,1
+          panel.border=element_rect(colour="black", fill=NA, size=0.5))
+}
+#p
+ggsave("nests_2022.png", plot = p, width = 8, height = 6, dpi = 300)
+p_2022
+
+
+
+
+
+####2023####
+db <- "C:/Users/shoepfner/Desktop/db_kig_nesting_waterfowl_2019-2026_compiled_20260923.accdb"
+
+# connect to the Access database via RODBC package
+con_db<-odbcConnectAccess2007(db)
+# get list of data tables available in the Access database
+sqlTables(con_db,tableType="TABLE")$TABLE_NAME
+# load tables used in report
+nest <- sqlFetch(con_db,"tbl_Nest")
+band <- sqlFetch(con_db,"tbl_Band")
+tdr <- sqlFetch(con_db,"tbl_TDR")
+visit <- sqlFetch(con_db,"tbl_Visit")
+resight <- sqlFetch(con_db,"tbl_Resight")
+tissue <- sqlFetch(con_db,"tbl_TissueSamples")
+
+# wrangle the nest data a bit
+# subset to 2025 data only
+nest$year <- format(nest$dt_found, format = "%Y")
+nest <- subset(nest, year =="2023")
+nest <- nest %>% filter(nest$cat_species == "SPEI")
+
+# recode and consolidate nest fate categories 
+nest$final_fate[nest$cat_fate == "active"] <- "active_lastcheck"
+nest$final_fate[nest$cat_fate == "active_lastcheck"] <- "active_lastcheck"
+nest$final_fate[nest$cat_fate == "eggs_abandoned"] <- "failed"
+nest$final_fate[nest$cat_fate == "eggs_destroyed"] <- "failed"
+nest$final_fate[nest$cat_fate == "eggs_missing"] <- "failed"
+nest$final_fate[nest$cat_fate == "eggs_inviable"] <- "failed"
+nest$final_fate[nest$cat_fate == "hatched"] <- "hatched"
+nest$final_fate[nest$cat_fate == "not_monitored"] <- "not_monitored"
+
+lyr_spei <- st_layers("~/2026 Kig post-field code/kig map files/plots_spei.kml") #Sarah's path
+
+plots_spei <- sf::st_read("~/2026 Kig post-field code/kig map files/plots_spei.kml", quiet = FALSE)   #Sarah's path
+crs_spei_plots <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
+
+lyr_emgo <- sf::st_layers("~/2026 Kig post-field code/kig map files/plots_emgo_core.kml")
+plots_emgo_core <- sf::st_read("~/2026 Kig post-field code/kig map files/plots_emgo_core.kml")
+
+
+sf::gdal_utils("info",'~/2026 Kig post-field code/kig map files/kig_georef.tif') #kig image from Google Earth georeferenced in 
+raster_kig <- terra::rast("~/2026 Kig post-field code/kig map files/kig_georef.tif")
+names(raster_kig)
+
+df_kig_2023 <- as.data.frame(raster_kig, xy=TRUE) # note 5 columns of georef'd values, but they are identical
+
+
+# create Kig plot, but using aes to set the point aesthetics and permit making a legend
+scale_label <- "Nest Fate"
+p_2023 <- ggplot() +
+  geom_raster(data = df_kig_2023, aes(x = x, y=y, fill = kig_georef_1)) + # Kig geotif
+  scale_fill_gradient(low="black", high="white", guide = FALSE) + # kig image as b&w, guide FALSE prevents the legend
+  #geom_polygon(data = plots_emgo_core, aes(x = long, y = lat, group = group), color = "white", fill = "white", alpha = 0.0, linewidth = 0.25, linetype = "dotted") + # emgo plots
+  geom_sf(data = plots_emgo_core, fill = NA, color = "white", linetype = "dashed") +
+  geom_sf(data = plots_spei, color = "white", fill = "white", alpha = 0.3) +
+  #geom_polygon(data = plots_spei, aes(x = long, y = lat, group = group), fill = "white", colour = "white", alpha =0.25, linewidth = 0.25)+ # spei plots
+  geom_point(data = nest, aes(x = val_lon_nest, y = val_lat_nest, colour = as.factor(final_fate), shape = as.factor(final_fate)), size = 1.25)+ # nest locations, colored by fate
+  scale_color_manual(values = c("green","red","green","blue"), scale_label, labels = c("active last check","failed", "hatched","not monitored"))+
+  scale_shape_manual(values = c(21,20,20,21), scale_label, labels = c("active last check","failed", "hatched","not monitored"))+
+  theme(axis.text.x = element_text(colour = "black", size = 6),
+        axis.text.y = element_text(colour = "black", size = 6),
+        axis.title.x = element_text(colour = "black",size = 8),
+        axis.title.y = element_text(colour = "black",size = 8),
+        axis.ticks = element_line(linewidth = 0.25), #was 0.5
+        #legend.title = element_text(size = 6),
+        #legend.text = element_text(size = 6),
+        panel.background = element_blank())+
+  xlab("Longitude")+
+  ylab("Latitude")+
+  scale_x_continuous(limits = c(-165.03, -164.920), expand = c(0,0))+
+  scale_y_continuous(limits = c(60.815, 60.875), expand = c(0,0)) +
+  ggtitle("2023") 
+p_2023
+
+# decrease the size of the legend as per: https://stackoverflow.com/questions/52297978/decrease-overal-legend-size-elements-and-text 
+addSmallLegend <- function(myPlot, pointSize = 1.0, textSize = 8, spaceLegend = 0.1) { #(myPlot, pointSize = 0.9, textSize = 6, spaceLegend = 0.1)
+  myPlot +
+    guides(shape = guide_legend(override.aes = list(size = pointSize)),
+           color = guide_legend(override.aes = list(size = pointSize))) +
+    theme(legend.title = element_text(size = textSize), 
+          legend.text  = element_text(size = textSize),
+          legend.key.size = unit(spaceLegend, "lines"),
+          legend.justification = c(1, 1), 
+          legend.position = c(0.98, 0.98),#was 1,1
+          panel.border=element_rect(colour="black", fill=NA, size=0.5))
+}
+#p
+ggsave("nests_2023.png", plot = p, width = 8, height = 6, dpi = 300)
+p_2023 
+
+
+
+
+
+####2024####
+db <- "C:/Users/shoepfner/Desktop/db_kig_nesting_waterfowl_2019-2026_compiled_20260923.accdb"
+
+# connect to the Access database via RODBC package
+con_db<-odbcConnectAccess2007(db)
+# get list of data tables available in the Access database
+sqlTables(con_db,tableType="TABLE")$TABLE_NAME
+# load tables used in report
+nest <- sqlFetch(con_db,"tbl_Nest")
+band <- sqlFetch(con_db,"tbl_Band")
+tdr <- sqlFetch(con_db,"tbl_TDR")
+visit <- sqlFetch(con_db,"tbl_Visit")
+resight <- sqlFetch(con_db,"tbl_Resight")
+tissue <- sqlFetch(con_db,"tbl_TissueSamples")
+
+# wrangle the nest data a bit
+# subset to 2025 data only
+nest$year <- format(nest$dt_found, format = "%Y")
+nest <- subset(nest, year =="2024")
+nest <- nest %>% filter(nest$cat_species == "SPEI")
+
+# recode and consolidate nest fate categories 
+nest$final_fate[nest$cat_fate == "active"] <- "active_lastcheck"
+nest$final_fate[nest$cat_fate == "active_lastcheck"] <- "active_lastcheck"
+nest$final_fate[nest$cat_fate == "eggs_abandoned"] <- "failed"
+nest$final_fate[nest$cat_fate == "eggs_destroyed"] <- "failed"
+nest$final_fate[nest$cat_fate == "eggs_missing"] <- "failed"
+nest$final_fate[nest$cat_fate == "eggs_inviable"] <- "failed"
+nest$final_fate[nest$cat_fate == "hatched"] <- "hatched"
+nest$final_fate[nest$cat_fate == "not_monitored"] <- "not_monitored"
+
+lyr_spei <- st_layers("~/2026 Kig post-field code/kig map files/plots_spei.kml") #Sarah's path
+
+plots_spei <- sf::st_read("~/2026 Kig post-field code/kig map files/plots_spei.kml", quiet = FALSE)   #Sarah's path
+crs_spei_plots <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
+
+lyr_emgo <- sf::st_layers("~/2026 Kig post-field code/kig map files/plots_emgo_core.kml")
+plots_emgo_core <- sf::st_read("~/2026 Kig post-field code/kig map files/plots_emgo_core.kml")
+
+
+sf::gdal_utils("info",'~/2026 Kig post-field code/kig map files/kig_georef.tif') #kig image from Google Earth georeferenced in 
+raster_kig <- terra::rast("~/2026 Kig post-field code/kig map files/kig_georef.tif")
+names(raster_kig)
+
+df_kig_2024 <- as.data.frame(raster_kig, xy=TRUE) # note 5 columns of georef'd values, but they are identical
+
+
+# create Kig plot, but using aes to set the point aesthetics and permit making a legend
+scale_label <- "Nest Fate"
+p_2024 <- ggplot() +
+  geom_raster(data = df_kig_2024, aes(x = x, y=y, fill = kig_georef_1)) + # Kig geotif
+  scale_fill_gradient(low="black", high="white", guide = FALSE) + # kig image as b&w, guide FALSE prevents the legend
+  #geom_polygon(data = plots_emgo_core, aes(x = long, y = lat, group = group), color = "white", fill = "white", alpha = 0.0, linewidth = 0.25, linetype = "dotted") + # emgo plots
+  geom_sf(data = plots_emgo_core, fill = NA, color = "white", linetype = "dashed") +
+  geom_sf(data = plots_spei, color = "white", fill = "white", alpha = 0.3) +
+  #geom_polygon(data = plots_spei, aes(x = long, y = lat, group = group), fill = "white", colour = "white", alpha =0.25, linewidth = 0.25)+ # spei plots
+  geom_point(data = nest, aes(x = val_lon_nest, y = val_lat_nest, colour = as.factor(final_fate), shape = as.factor(final_fate)), size = 1.25)+ # nest locations, colored by fate
+  scale_color_manual(values = c("green","red","green","blue"), scale_label, labels = c("active last check","failed", "hatched","not monitored"))+
+  scale_shape_manual(values = c(21,20,20,21), scale_label, labels = c("active last check","failed", "hatched","not monitored"))+
+  theme(axis.text.x = element_text(colour = "black", size = 6),
+        axis.text.y = element_text(colour = "black", size = 6),
+        axis.title.x = element_text(colour = "black",size = 8),
+        axis.title.y = element_text(colour = "black",size = 8),
+        axis.ticks = element_line(linewidth = 0.25), #was 0.5
+        #legend.title = element_text(size = 6),
+        #legend.text = element_text(size = 6),
+        panel.background = element_blank())+
+  xlab("Longitude")+
+  ylab("Latitude")+
+  scale_x_continuous(limits = c(-165.03, -164.920), expand = c(0,0))+
+  scale_y_continuous(limits = c(60.815, 60.875), expand = c(0,0)) +
+  ggtitle("2024") 
+p_2024
+
+# decrease the size of the legend as per: https://stackoverflow.com/questions/52297978/decrease-overal-legend-size-elements-and-text 
+addSmallLegend <- function(myPlot, pointSize = 1.0, textSize = 8, spaceLegend = 0.1) { #(myPlot, pointSize = 0.9, textSize = 6, spaceLegend = 0.1)
+  myPlot +
+    guides(shape = guide_legend(override.aes = list(size = pointSize)),
+           color = guide_legend(override.aes = list(size = pointSize))) +
+    theme(legend.title = element_text(size = textSize), 
+          legend.text  = element_text(size = textSize),
+          legend.key.size = unit(spaceLegend, "lines"),
+          legend.justification = c(1, 1), 
+          legend.position = c(0.98, 0.98),#was 1,1
+          panel.border=element_rect(colour="black", fill=NA, size=0.5))
+}
+#p
+ggsave("nests_2024.png", plot = p_2024, width = 8, height = 6, dpi = 300)
+p_2024
+
+
+
+
+
+
+####2025####
+db <- "C:/Users/shoepfner/Desktop/db_kig_nesting_waterfowl_2019-2026_compiled_20260923.accdb"
+
+# connect to the Access database via RODBC package
+con_db<-odbcConnectAccess2007(db)
+# get list of data tables available in the Access database
+sqlTables(con_db,tableType="TABLE")$TABLE_NAME
+# load tables used in report
+nest <- sqlFetch(con_db,"tbl_Nest")
+band <- sqlFetch(con_db,"tbl_Band")
+tdr <- sqlFetch(con_db,"tbl_TDR")
+visit <- sqlFetch(con_db,"tbl_Visit")
+resight <- sqlFetch(con_db,"tbl_Resight")
+tissue <- sqlFetch(con_db,"tbl_TissueSamples")
+
+# wrangle the nest data a bit
+# subset to 2025 data only
+nest$year <- format(nest$dt_found, format = "%Y")
+nest <- subset(nest, year =="2025")
+nest <- nest %>% filter(nest$cat_species == "SPEI")
+
+# recode and consolidate nest fate categories 
+nest$final_fate[nest$cat_fate == "active"] <- "active_lastcheck"
+nest$final_fate[nest$cat_fate == "active_lastcheck"] <- "active_lastcheck"
+nest$final_fate[nest$cat_fate == "eggs_abandoned"] <- "failed"
+nest$final_fate[nest$cat_fate == "eggs_destroyed"] <- "failed"
+nest$final_fate[nest$cat_fate == "eggs_missing"] <- "failed"
+nest$final_fate[nest$cat_fate == "eggs_inviable"] <- "failed"
+nest$final_fate[nest$cat_fate == "hatched"] <- "hatched"
+nest$final_fate[nest$cat_fate == "not_monitored"] <- "not_monitored"
+
+lyr_spei <- st_layers("~/2026 Kig post-field code/kig map files/plots_spei.kml") #Sarah's path
+
+plots_spei <- sf::st_read("~/2026 Kig post-field code/kig map files/plots_spei.kml", quiet = FALSE)   #Sarah's path
+crs_spei_plots <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
+
+lyr_emgo <- sf::st_layers("~/2026 Kig post-field code/kig map files/plots_emgo_core.kml")
+plots_emgo_core <- sf::st_read("~/2026 Kig post-field code/kig map files/plots_emgo_core.kml")
+
+
+sf::gdal_utils("info",'~/2026 Kig post-field code/kig map files/kig_georef.tif') #kig image from Google Earth georeferenced in 
+raster_kig <- terra::rast("~/2026 Kig post-field code/kig map files/kig_georef.tif")
+names(raster_kig)
+
+df_kig_2025 <- as.data.frame(raster_kig, xy=TRUE) # note 5 columns of georef'd values, but they are identical
+
+
+# create Kig plot, but using aes to set the point aesthetics and permit making a legend
+scale_label <- "Nest Fate"
+p_2025 <- ggplot() +
+  geom_raster(data = df_kig_2025, aes(x = x, y=y, fill = kig_georef_1)) + # Kig geotif
+  scale_fill_gradient(low="black", high="white", guide = FALSE) + # kig image as b&w, guide FALSE prevents the legend
+  #geom_polygon(data = plots_emgo_core, aes(x = long, y = lat, group = group), color = "white", fill = "white", alpha = 0.0, linewidth = 0.25, linetype = "dotted") + # emgo plots
+  geom_sf(data = plots_emgo_core, fill = NA, color = "white", linetype = "dashed") +
+  geom_sf(data = plots_spei, color = "white", fill = "white", alpha = 0.3) +
+  #geom_polygon(data = plots_spei, aes(x = long, y = lat, group = group), fill = "white", colour = "white", alpha =0.25, linewidth = 0.25)+ # spei plots
+  geom_point(data = nest, aes(x = val_lon_nest, y = val_lat_nest, colour = as.factor(final_fate), shape = as.factor(final_fate)), size = 1.25)+ # nest locations, colored by fate
+  scale_color_manual(values = c("green","red","green","blue"), scale_label, labels = c("active last check","failed", "hatched","not monitored"))+
+  scale_shape_manual(values = c(21,20,20,21), scale_label, labels = c("active last check","failed", "hatched","not monitored"))+
+  theme(axis.text.x = element_text(colour = "black", size = 6),
+        axis.text.y = element_text(colour = "black", size = 6),
+        axis.title.x = element_text(colour = "black",size = 8),
+        axis.title.y = element_text(colour = "black",size = 8),
+        axis.ticks = element_line(linewidth = 0.25), #was 0.5
+        #legend.title = element_text(size = 6),
+        #legend.text = element_text(size = 6),
+        panel.background = element_blank())+
+  xlab("Longitude")+
+  ylab("Latitude")+
+  scale_x_continuous(limits = c(-165.03, -164.920), expand = c(0,0))+
+  scale_y_continuous(limits = c(60.815, 60.875), expand = c(0,0)) +
+  ggtitle("2025") 
+p_2025
+
+# decrease the size of the legend as per: https://stackoverflow.com/questions/52297978/decrease-overal-legend-size-elements-and-text 
+addSmallLegend <- function(myPlot, pointSize = 1.0, textSize = 8, spaceLegend = 0.1) { #(myPlot, pointSize = 0.9, textSize = 6, spaceLegend = 0.1)
+  myPlot +
+    guides(shape = guide_legend(override.aes = list(size = pointSize)),
+           color = guide_legend(override.aes = list(size = pointSize))) +
+    theme(legend.title = element_text(size = textSize), 
+          legend.text  = element_text(size = textSize),
+          legend.key.size = unit(spaceLegend, "lines"),
+          legend.justification = c(1, 1), 
+          legend.position = c(0.98, 0.98),#was 1,1
+          panel.border=element_rect(colour="black", fill=NA, size=0.5))
+}
+#p
+ggsave("nests_2025.png", plot = p_2025, width = 8, height = 6, dpi = 300)
+p_2025
+
+
+
+
+
+
+####2026####
+db <- "C:/Users/shoepfner/Desktop/db_kig_nesting_waterfowl_2019-2026_compiled_20260923.accdb"
+
+# connect to the Access database via RODBC package
+con_db<-odbcConnectAccess2007(db)
+# get list of data tables available in the Access database
+sqlTables(con_db,tableType="TABLE")$TABLE_NAME
+# load tables used in report
+nest <- sqlFetch(con_db,"tbl_Nest")
+band <- sqlFetch(con_db,"tbl_Band")
+tdr <- sqlFetch(con_db,"tbl_TDR")
+visit <- sqlFetch(con_db,"tbl_Visit")
+resight <- sqlFetch(con_db,"tbl_Resight")
+tissue <- sqlFetch(con_db,"tbl_TissueSamples")
+
+# wrangle the nest data a bit
+# subset to 2025 data only
+nest$year <- format(nest$dt_found, format = "%Y")
+nest <- subset(nest, year =="2026")
+nest <- nest %>% filter(nest$cat_species == "SPEI")
+
+# recode and consolidate nest fate categories 
+nest$final_fate[nest$cat_fate == "active"] <- "active_lastcheck"
+nest$final_fate[nest$cat_fate == "active_lastcheck"] <- "active_lastcheck"
+nest$final_fate[nest$cat_fate == "eggs_abandoned"] <- "failed"
+nest$final_fate[nest$cat_fate == "eggs_destroyed"] <- "failed"
+nest$final_fate[nest$cat_fate == "eggs_missing"] <- "failed"
+nest$final_fate[nest$cat_fate == "eggs_inviable"] <- "failed"
+nest$final_fate[nest$cat_fate == "hatched"] <- "hatched"
+nest$final_fate[nest$cat_fate == "not_monitored"] <- "not_monitored"
+
+lyr_spei <- st_layers("~/2026 Kig post-field code/kig map files/plots_spei.kml") #Sarah's path
+
+plots_spei <- sf::st_read("~/2026 Kig post-field code/kig map files/plots_spei.kml", quiet = FALSE)   #Sarah's path
+crs_spei_plots <- "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
+
+lyr_emgo <- sf::st_layers("~/2026 Kig post-field code/kig map files/plots_emgo_core.kml")
+plots_emgo_core <- sf::st_read("~/2026 Kig post-field code/kig map files/plots_emgo_core.kml")
+
+
+sf::gdal_utils("info",'~/2026 Kig post-field code/kig map files/kig_georef.tif') #kig image from Google Earth georeferenced in 
+raster_kig <- terra::rast("~/2026 Kig post-field code/kig map files/kig_georef.tif")
+names(raster_kig)
+
+df_kig_2026 <- as.data.frame(raster_kig, xy=TRUE) # note 5 columns of georef'd values, but they are identical
+
+
+# create Kig plot, but using aes to set the point aesthetics and permit making a legend
+scale_label <- "Nest Fate"
+p_2026 <- ggplot() +
+  geom_raster(data = df_kig_2026, aes(x = x, y=y, fill = kig_georef_1)) + # Kig geotif
+  scale_fill_gradient(low="black", high="white", guide = FALSE) + # kig image as b&w, guide FALSE prevents the legend
+  #geom_polygon(data = plots_emgo_core, aes(x = long, y = lat, group = group), color = "white", fill = "white", alpha = 0.0, linewidth = 0.25, linetype = "dotted") + # emgo plots
+  geom_sf(data = plots_emgo_core, fill = NA, color = "white", linetype = "dashed") +
+  geom_sf(data = plots_spei, color = "white", fill = "white", alpha = 0.3) +
+  #geom_polygon(data = plots_spei, aes(x = long, y = lat, group = group), fill = "white", colour = "white", alpha =0.25, linewidth = 0.25)+ # spei plots
+  geom_point(data = nest, aes(x = val_lon_nest, y = val_lat_nest, colour = as.factor(final_fate), shape = as.factor(final_fate)), size = 1.25)+ # nest locations, colored by fate
+  scale_color_manual(values = c("green","red","green","blue"), scale_label, labels = c("active last check","failed", "hatched","not monitored"))+
+  scale_shape_manual(values = c(21,20,20,21), scale_label, labels = c("active last check","failed", "hatched","not monitored"))+
+  theme(axis.text.x = element_text(colour = "black", size = 6),
+        axis.text.y = element_text(colour = "black", size = 6),
+        axis.title.x = element_text(colour = "black",size = 8),
+        axis.title.y = element_text(colour = "black",size = 8),
+        axis.ticks = element_line(linewidth = 0.25), #was 0.5
+        #legend.title = element_text(size = 6),
+        #legend.text = element_text(size = 6),
+        panel.background = element_blank())+
+  xlab("Longitude")+
+  ylab("Latitude")+
+  scale_x_continuous(limits = c(-165.03, -164.920), expand = c(0,0))+
+  scale_y_continuous(limits = c(60.815, 60.875), expand = c(0,0)) +
+  ggtitle("2026") 
+p_2026
+
+# decrease the size of the legend as per: https://stackoverflow.com/questions/52297978/decrease-overal-legend-size-elements-and-text 
+addSmallLegend <- function(myPlot, pointSize = 1.0, textSize = 8, spaceLegend = 0.1) { #(myPlot, pointSize = 0.9, textSize = 6, spaceLegend = 0.1)
+  myPlot +
+    guides(shape = guide_legend(override.aes = list(size = pointSize)),
+           color = guide_legend(override.aes = list(size = pointSize))) +
+    theme(legend.title = element_text(size = textSize), 
+          legend.text  = element_text(size = textSize),
+          legend.key.size = unit(spaceLegend, "lines"),
+          legend.justification = c(1, 1), 
+          legend.position = c(0.98, 0.98),#was 1,1
+          panel.border=element_rect(colour="black", fill=NA, size=0.5))
+}
+#p
+ggsave("nests_2026.png", plot = p, width = 8, height = 6, dpi = 300)
+p_2026
+
+
+
+
+
+
+####combine graphs####
+library(ggpubr)
+combined <- ggarrange(p_2021, p_2022, p_2023, p_2024, p_2025, p_2026,
+                       ncol = 2, nrow = 3,
+                       common.legend = TRUE,
+                       legend = "bottom")
+combined
+
+ggsave("combined_figure.png", combined, width = 12, height = 8, dpi = 300)
+
+
+
+
+
+
+```
+
+
+
+

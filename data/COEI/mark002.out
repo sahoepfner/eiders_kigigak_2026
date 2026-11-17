@@ -1,0 +1,313 @@
+
+ Program  MARK  - Survival Rate Estimation with Capture-Recapture Data
+ gfortran(dble/PIM2) Vers. 11.1 Nov 2024   3-Nov-2026 12:00:49    Page  001
+  
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ 
+ Welcome to MARK shoepfner on machine IFW-3NHM9N3 in subdirectory 
+ "C:\Users\shoepfner\Documents\spei_kig_2021-2026_annualReport\data\COEI" running file "mark002.inp".
+ This version was compiled by GCC version 14.2.0 using the options: 
+  -cpp -iprefix C:/tdm-gcc-64/mingw64-14-2/bin/../lib/gcc/
+  x86_64-w64-mingw32/14.2.0/ -D_MT -D_REENTRANT -U_REENTRANT -D
+  dbleprecision -m64 -march=x86-64 -mtune=generic -mthreads -O3 -std=f2023
+  -fimplicit-none -ffpe-summary=invalid,zero,overflow,underflow
+  -funroll-loops -fno-unsafe-math-optimizations -frounding-math
+  -fsignaling-nans -fall-intrinsics -fopenmp
+
+ This problem will use 7 of 8 possible threads.
+ Static thread allocation is used.
+ Schedule kind is omp_sched_dynamic with chunk size 1
+ INPUT --- proc title ;
+
+ For procedure title CPU Time was 0.001 secs and System Time was 0.016 secs.
+ INPUT --- proc chmatrix occasions= 36 groups= 1 etype= Nest Nodes= 
+ INPUT --- 101 icovar = 36 ICMeans  NoHist hist= 207 ;
+ INPUT ---    time interval 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 
+ INPUT ---    1 1 1 1 1 1 1 1 1 1  1 1 1 ;
+ INPUT ---     icovariates init NestAge1 NestAge2 NestAge3 NestAge4 
+ INPUT ---    NestAge5 NestAge6 NestAge7 NestAge8  NestAge9 NestAge10 
+ INPUT ---    NestAge11 NestAge12 NestAge13 NestAge14 NestAge15 NestAge16 
+ INPUT ---    NestAge17 NestAge18  NestAge19 NestAge20 NestAge21 
+ INPUT ---    NestAge22 NestAge23 NestAge24 NestAge25 NestAge26 NestAge27 
+ INPUT ---     NestAge28 NestAge29 NestAge30 NestAge31 NestAge32 
+ INPUT ---    NestAge33 NestAge34 NestAge35 ;
+ INPUT ---    glabel(1)=Group 1;
+
+      Number of unique encounter histories read was 207.
+
+      Number of individual covariates read was 36.
+      Time interval lengths are all equal to 1.
+
+      Data type number is 24
+      Data type is Nest Success
+
+ For procedure chmatrix CPU Time was 0.031 secs and System Time was 0.031 secs.
+
+Program  MARK  - Survival Rate Estimation with Capture-Recapture Data
+ gfortran(dble/PIM2) Vers. 11.1 Nov 2024   3-Nov-2026 12:00:49    Page  002
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ 
+
+
+ INPUT --- proc estimate link=Logit NOLOOP varest=2ndPart    ;
+ INPUT --- model={ S.syin };
+ INPUT ---    group=1 S    rows=1 cols=35 Square ;
+ INPUT ---        1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 
+ INPUT ---       23 24 25 26 27 28 29 30 31 32 33 34 35 ;
+ INPUT ---    design matrix constraints=35 covariates=3;
+ INPUT ---        1 init NestAge1;
+ INPUT ---        1 init NestAge2;
+ INPUT ---        1 init NestAge3;
+ INPUT ---        1 init NestAge4;
+ INPUT ---        1 init NestAge5;
+ INPUT ---        1 init NestAge6;
+ INPUT ---        1 init NestAge7;
+ INPUT ---        1 init NestAge8;
+ INPUT ---        1 init NestAge9;
+ INPUT ---        1 init NestAge10;
+ INPUT ---        1 init NestAge11;
+ INPUT ---        1 init NestAge12;
+ INPUT ---        1 init NestAge13;
+ INPUT ---        1 init NestAge14;
+ INPUT ---        1 init NestAge15;
+ INPUT ---        1 init NestAge16;
+ INPUT ---        1 init NestAge17;
+ INPUT ---        1 init NestAge18;
+ INPUT ---        1 init NestAge19;
+ INPUT ---        1 init NestAge20;
+ INPUT ---        1 init NestAge21;
+ INPUT ---        1 init NestAge22;
+ INPUT ---        1 init NestAge23;
+ INPUT ---        1 init NestAge24;
+ INPUT ---        1 init NestAge25;
+ INPUT ---        1 init NestAge26;
+ INPUT ---        1 init NestAge27;
+ INPUT ---        1 init NestAge28;
+ INPUT ---        1 init NestAge29;
+ INPUT ---        1 init NestAge30;
+ INPUT ---        1 init NestAge31;
+ INPUT ---        1 init NestAge32;
+ INPUT ---        1 init NestAge33;
+ INPUT ---        1 init NestAge34;
+ INPUT ---        1 init NestAge35;
+ INPUT ---       blabel(1)=S:(Intercept);
+ INPUT ---       blabel(2)=S:init;
+ INPUT ---       blabel(3)=S:NestAge;
+
+Program  MARK  - Survival Rate Estimation with Capture-Recapture Data
+ gfortran(dble/PIM2) Vers. 11.1 Nov 2024   3-Nov-2026 12:00:49    Page  003
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ 
+ INPUT ---       rlabel(1)=S g1 a0 t1;
+ INPUT ---       rlabel(2)=S g1 a1 t2;
+ INPUT ---       rlabel(3)=S g1 a2 t3;
+ INPUT ---       rlabel(4)=S g1 a3 t4;
+ INPUT ---       rlabel(5)=S g1 a4 t5;
+ INPUT ---       rlabel(6)=S g1 a5 t6;
+ INPUT ---       rlabel(7)=S g1 a6 t7;
+ INPUT ---       rlabel(8)=S g1 a7 t8;
+ INPUT ---       rlabel(9)=S g1 a8 t9;
+ INPUT ---       rlabel(10)=S g1 a9 t10;
+ INPUT ---       rlabel(11)=S g1 a10 t11;
+ INPUT ---       rlabel(12)=S g1 a11 t12;
+ INPUT ---       rlabel(13)=S g1 a12 t13;
+ INPUT ---       rlabel(14)=S g1 a13 t14;
+ INPUT ---       rlabel(15)=S g1 a14 t15;
+ INPUT ---       rlabel(16)=S g1 a15 t16;
+ INPUT ---       rlabel(17)=S g1 a16 t17;
+ INPUT ---       rlabel(18)=S g1 a17 t18;
+ INPUT ---       rlabel(19)=S g1 a18 t19;
+ INPUT ---       rlabel(20)=S g1 a19 t20;
+ INPUT ---       rlabel(21)=S g1 a20 t21;
+ INPUT ---       rlabel(22)=S g1 a21 t22;
+ INPUT ---       rlabel(23)=S g1 a22 t23;
+ INPUT ---       rlabel(24)=S g1 a23 t24;
+ INPUT ---       rlabel(25)=S g1 a24 t25;
+ INPUT ---       rlabel(26)=S g1 a25 t26;
+ INPUT ---       rlabel(27)=S g1 a26 t27;
+ INPUT ---       rlabel(28)=S g1 a27 t28;
+ INPUT ---       rlabel(29)=S g1 a28 t29;
+ INPUT ---       rlabel(30)=S g1 a29 t30;
+ INPUT ---       rlabel(31)=S g1 a30 t31;
+ INPUT ---       rlabel(32)=S g1 a31 t32;
+ INPUT ---       rlabel(33)=S g1 a32 t33;
+ INPUT ---       rlabel(34)=S g1 a33 t34;
+ INPUT ---       rlabel(35)=S g1 a34 t35;
+   Model is { S.syin }
+
+ Link Function Used is LOGIT        
+
+ Variance Estimation Procedure Used is 2ndPart 
+ -2logL(saturated) = 0.0000000     
+ Effective Sample Size = 2872
+
+ Number of function evaluations was 23 for 3 parameters.
+ For numerical optimization, CPU Time was 0.016 secs and System Time was 0.063 secs.
+ -2logL { S.syin } = 384.35252     
+ Penalty { S.syin } = 0.0000000     
+
+Program  MARK  - Survival Rate Estimation with Capture-Recapture Data
+ gfortran(dble/PIM2) Vers. 11.1 Nov 2024   3-Nov-2026 12:00:49    Page  004
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ 
+ Gradient { S.syin }:
+  4.16594E-05  3.39423E-05  1.38353E-05
+ Maximum ABS(G) { S.syin } =  4.16594E-05
+ To compute VC matrix, CPU Time was 0.094 secs and System Time was 0.001 secs.
+ S Vector { S.syin }:
+   106.3131      1.262307     0.2996606E-01
+ To invert VC matrix, CPU Time was 0.001 secs and System Time was 0.001 secs.
+ Ratio Threshold = 50.00 Max Gap (1/2) = 84.22 Next Max Gap (1/2) = 84.22
+ Gap Method for Num. of Estimated Parameters { S.syin } = 1          
+ Threshold { S.syin } = 0.8331877E-04           
+ Numerical Threshold Method for Num. of Estimated Parameters { S.syin } = 3          
+ Number of Estimated Parameters { S.syin } = 3          
+
+   * *  WARNING  * *   Number of parameters estimated from gap method (=1) and threshold method (=3) differ.  Inspect full output. 
+ Ratios of S Vector { S.syin }:
+   1/2    84.22131       2/3    42.12454    
+ DEVIANCE { S.syin } = 384.35252               
+ DEVIANCE Degrees of Freedom { S.syin } = 204          
+ c-hat { S.syin } = 1.8840810               
+ AIC { S.syin } = 390.35252               
+ AICc { S.syin } = 390.36089               
+ BIC { S.syin } = 408.24081               
+ Pearson Chisquare { S.syin } = 1318.8875               
+
+
+                       LOGIT Link Function Parameters of { S.syin }
+                                                              95% Confidence Interval
+    Parameter                  Beta         Standard Error     Lower           Upper
+ -------------------------  --------------  --------------  --------------  --------------
+    1:S:(Intercept)          12.185899       3.7578047       4.8206012       19.551196    
+    2:S:init                -0.0559468       0.0241423      -0.1032657      -0.0086280    
+    3:S:NestAge              0.0026382       0.0250822      -0.0465230       0.0517994    
+
+
+                          Real Function Parameters of { S.syin }
+
+Program  MARK  - Survival Rate Estimation with Capture-Recapture Data
+ gfortran(dble/PIM2) Vers. 11.1 Nov 2024   3-Nov-2026 12:00:49    Page  005
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ 
+
+      Following estimates based on unstandardized individual covariate values:
+          Variable                 Value        
+          ----------------------  ------------- 
+          INIT                     148.94686    
+          NESTAGE1                -6.9468599    
+          NESTAGE2                -5.9468599    
+          NESTAGE3                -4.9468599    
+          NESTAGE4                -3.9468599    
+          NESTAGE5                -2.9468599    
+          NESTAGE6                -1.9468599    
+          NESTAGE7                -0.9468599    
+          NESTAGE8                 0.0531401    
+          NESTAGE9                 1.0531401    
+          NESTAGE10                2.0531401    
+          NESTAGE11                3.0531401    
+          NESTAGE12                4.0531401    
+          NESTAGE13                5.0531401    
+          NESTAGE14                6.0531401    
+          NESTAGE15                7.0531401    
+          NESTAGE16                8.0531401    
+          NESTAGE17                9.0531401    
+          NESTAGE18                10.053140    
+          NESTAGE19                11.053140    
+          NESTAGE20                12.053140    
+          NESTAGE21                13.053140    
+          NESTAGE22                14.053140    
+          NESTAGE23                15.053140    
+          NESTAGE24                16.053140    
+          NESTAGE25                17.053140    
+          NESTAGE26                18.053140    
+          NESTAGE27                19.053140    
+          NESTAGE28                20.053140    
+          NESTAGE29                21.053140    
+          NESTAGE30                22.053140    
+          NESTAGE31                23.053140    
+          NESTAGE32                24.053140    
+          NESTAGE33                25.053140    
+          NESTAGE34                26.053140    
+          NESTAGE35                27.053140    
+                                                               95% Confidence Interval
+     Parameter                Estimate       Standard Error     Lower           Upper
+ --------------------------  --------------  --------------  --------------  --------------
+     1:S g1 a0 t1             0.9788444       0.0107532       0.9435710       0.9922497       
+     2:S g1 a1 t2             0.9788989       0.0102252       0.9461830       0.9918968       
+     3:S g1 a2 t3             0.9789533       0.0097017       0.9486723       0.9915294       
+
+Program  MARK  - Survival Rate Estimation with Capture-Recapture Data
+ gfortran(dble/PIM2) Vers. 11.1 Nov 2024   3-Nov-2026 12:00:49    Page  006
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ 
+     4:S g1 a3 t4             0.9790076       0.0091828       0.9510431       0.9911473       
+     5:S g1 a4 t5             0.9790618       0.0086690       0.9532995       0.9907502       
+     6:S g1 a5 t6             0.9791158       0.0081605       0.9554449       0.9903382       
+     7:S g1 a6 t7             0.9791697       0.0076580       0.9574828       0.9899112       
+     8:S g1 a7 t8             0.9792234       0.0071620       0.9594161       0.9894697       
+     9:S g1 a8 t9             0.9792770       0.0066735       0.9612472       0.9890143       
+    10:S g1 a9 t10            0.9793305       0.0061935       0.9629779       0.9885461       
+    11:S g1 a10 t11           0.9793838       0.0057233       0.9646093       0.9880668       
+    12:S g1 a11 t12           0.9794370       0.0052649       0.9661412       0.9875789       
+    13:S g1 a12 t13           0.9794901       0.0048209       0.9675723       0.9870863       
+    14:S g1 a13 t14           0.9795430       0.0043945       0.9688992       0.9865945       
+    15:S g1 a14 t15           0.9795958       0.0039905       0.9701160       0.9861115       
+    16:S g1 a15 t16           0.9796485       0.0036153       0.9712130       0.9856486       
+    17:S g1 a16 t17           0.9797010       0.0032777       0.9721760       0.9852218       
+    18:S g1 a17 t18           0.9797534       0.0029890       0.9729852       0.9848523       
+    19:S g1 a18 t19           0.9798057       0.0027632       0.9736155       0.9845666       
+    20:S g1 a19 t20           0.9798578       0.0026152       0.9740395       0.9843930       
+    21:S g1 a20 t21           0.9799098       0.0025572       0.9742349       0.9843549       
+    22:S g1 a21 t22           0.9799617       0.0025937       0.9741935       0.9844611       
+    23:S g1 a22 t23           0.9800134       0.0027195       0.9739255       0.9847023       
+    24:S g1 a23 t24           0.9800650       0.0029219       0.9734552       0.9850542       
+    25:S g1 a24 t25           0.9801165       0.0031852       0.9728125       0.9854876       
+    26:S g1 a25 t26           0.9801679       0.0034946       0.9720247       0.9859749       
+    27:S g1 a26 t27           0.9802191       0.0038381       0.9711138       0.9864942       
+    28:S g1 a27 t28           0.9802702       0.0042066       0.9700959       0.9870292       
+    29:S g1 a28 t29           0.9803211       0.0045931       0.9689821       0.9875682       
+    30:S g1 a29 t30           0.9803720       0.0049929       0.9677798       0.9881034       
+    31:S g1 a30 t31           0.9804227       0.0054024       0.9664937       0.9886293       
+    32:S g1 a31 t32           0.9804732       0.0058190       0.9651266       0.9891423       
+    33:S g1 a32 t33           0.9805237       0.0062407       0.9636797       0.9896400       
+    34:S g1 a33 t34           0.9805740       0.0066660       0.9621533       0.9901211       
+    35:S g1 a34 t35           0.9806242       0.0070938       0.9605470       0.9905845       
+
+
+                     Estimates of Derived Parameters
+
+                     Survival Estimates of { S.syin }
+
+       Pr. Surviving
+        Duration of                   95% Confidence Interval
+ Group     Study      Standard Error     Lower          Upper     
+ ----- -------------- -------------- -------------- --------------
+   1    0.4886305      0.0533855      0.3859794      0.5922496    
+
+ To compute parameter estimates, CPU Time was 0.001 secs and System Time was 0.015 secs.
+
+ Attempted ordering of parameters by estimatibility:
+  1 3 2
+ Beta number 2 is a singular value.
+
+ For procedure estimate CPU Time was 0.203 secs and System Time was 0.140 secs.
+
+Program  MARK  - Survival Rate Estimation with Capture-Recapture Data
+ gfortran(dble/PIM2) Vers. 11.1 Nov 2024   3-Nov-2026 12:00:49    Page  007
+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ 
+
+
+ INPUT --- proc stop;
+
+ For this job, CPU Time in mins was 0.004 and System Time in mins was 0.003.
+
+     Time Start = 12:00:48.987   Time End = 12:00:49.187
+
+ Wall Clock Time in mins for this job was 0.003.
+
+ Maximum of 41 words used of 2048 words allocated.
+
+
+          E X E C U T I O N   S U C C E S S F U L
